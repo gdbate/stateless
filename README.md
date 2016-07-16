@@ -24,12 +24,18 @@ You might notice the code isn't here yet :) it is coming soon.
 
 ```javascript
 var Stateless = require('./stateless'),
-	stateless = new Stateless();
+	site = new Stateless();
 ```
 
 ### Configure Website Structure ###
 
-You must send an object with a page structure. This supports any level of hierarchy.
+You can specify an object, or a path to a JSON file with the site structure.
+
+```javascript
+site.pages(__dirname + '/pages.json');
+```
+
+JSON file example:
 
 ```json
 [
@@ -48,17 +54,13 @@ You must send an object with a page structure. This supports any level of hierar
 ]
 ```
 
-```javascript
-stateless.pages(__dirname + '/pages.json');
-```
-
 This maps all the pages to Vue components, and takes care of Vue-router and express routing. If you have a page with children, a 'pages' property will be available in the page components data object, allowing you to draw navigation for child pages.
 
 **Note:** this is designed to be a website micro service, so entire sites will use authentication or not.
 
 ### Configure Firebase ###
 
-You must create a service account for your firebase database. This is for storing session data and updating users in real-time. 
+You must create a service account for your Firebase database. This is for storing session data and updating users in real-time. 
 
 Obtain a service account credentials JSON under **Permissions -> Service Account** and the other values under "**project settings**" (click "add Firebase to your web app).
 
@@ -69,7 +71,7 @@ var options = {
 	authDomain: 'myaccount-#####.firebaseapp.com',
 	databaseURL: 'https://myaccount-#####.firebaseio.com'
 };
-stateless.firebase(options);
+site.firebase(options);
 ```
 
 These Firebase rules are required for security:
@@ -111,7 +113,7 @@ var options = {
 	clientId: 'XXXXXXXXXXXXXXXXXXXXXX',
 	clientSecret: 'XXXXXXXXXXXXXXXXXXXXXXXX_-XXXXXXXXXXXXXXXXXX'
 };
-stateless.auth0(options);
+site.auth0(options);
 ``` 
 
 ### Configure Reusable Vue Components ###
@@ -119,9 +121,9 @@ stateless.auth0(options);
 If you use Vue reusable components, You must describe them so they get included by webpack.
 
 ```javascript
-stateless.vue('component', ['form', 'line', 'markdown', 'table', 'tabs']);
-stateless.vue('field', ['boolean', 'checkbox', 'email', 'list', 'markdown', 'number', 'password', 'radio', 'select', 'text', 'textarea', 'toggle', 'url', 'date']);
-stateless.vue('cell', ['hidden', 'template', 'field', 'currency', 'if-null', 'boolean', 'number']);
+site.vue('component', ['form', 'line', 'markdown', 'table', 'tabs']);
+site.vue('field', ['boolean', 'checkbox', 'email', 'list', 'markdown', 'number', 'password', 'radio', 'select', 'text', 'textarea', 'toggle', 'url', 'date']);
+site.vue('cell', ['hidden', 'template', 'field', 'currency', 'if-null', 'boolean', 'number']);
 ```
 
 **Note:** Currently They must be prefixed/categorized. The .vue single file components will be found in the named folders, as well as referenced like this:
@@ -140,7 +142,7 @@ var options = {
 	sessionSecret: 'chicken',
 	urlLogout: '/'
 };
-stateless.http(options);
+site.http(options);
 ```
 
 ---
@@ -182,7 +184,7 @@ You can call controllers from others. The controller method is available in ever
 You can call controllers from others. The controller method is available in every controllers scope:
 
 ```javascript
-stateless.controller('message');
+site.controller('message');
 ```
 
 ## Appending to Controller Scope
@@ -198,7 +200,7 @@ function date(){
 	var d=new Date().getDate().toString();
 	return y+'-'+(m[1]?m:'0'+m[0])+'-'+(d[1]?d:'0'+d[0]);
 }
-stateless.scope('date', date);
+site.scope('date', date);
 ```
 
 ### Reading Scope
@@ -220,7 +222,7 @@ Stateless weirdly is very good at managing states. Everything from site-wide var
 When a server starts it must know how to populate state information to send to Firebase (and every user). You must provide a name of a state, name of a controller, and the path. Optionally you can specify parameters for the controller.
 
 ```
-stateless.stateMap('countries', 'country', 'list');
+site.stateMap('countries', 'country', 'list');
 ```
 
 Now the users will have a list of countries always available to them.
@@ -235,12 +237,12 @@ Accessing the (real-time) information in a Vue component is easy. In the `<templ
 </select>
 ```
 
-And in the `<script>`:
+And in the Vue component `<script>`:
 
 ```javascript
   export default {
     data: function(){return{
-      countries: Store.countries
+      countries: Store.countries //reactive
     }}
   };
 ```
@@ -254,7 +256,7 @@ Sometimes you might not want to map a state name to a controller. This is how yo
 this.stateSet('restart', this.datetime());
 
 //in the main app code:
-stateless.stateSet('restart', stateless.datetime());
+site.stateSet('restart', site.datetime());
 ```
 
 ## Event Handling
@@ -271,7 +273,7 @@ You can hook into events for logging, error handling purposes.
 ### Watching for an Event
 
 ```javascript
-stateless.on('err', function(err){
+site.on('err', function(err){
 	console.log('darn it all ', err.message);
 })
 ```
@@ -286,7 +288,7 @@ You may want to trigger an event yourself so you have one source for events:
 this.trigger('error', err);
 
 //in the main app code:
-stateless.trigger('error', err);
+site.trigger('error', err);
 ```
 
 ## Logging
