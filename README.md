@@ -123,7 +123,7 @@ If you use Vue reusable components, You must describe them so they get included 
 ```javascript
 site.vue('component', ['form', 'line', 'markdown', 'table', 'tabs']);
 site.vue('field', ['boolean', 'checkbox', 'email', 'list', 'markdown', 'number', 'password', 'radio', 'select', 'text', 'textarea', 'toggle', 'url', 'date']);
-site.vue('cell', ['hidden', 'template', 'field', 'currency', 'if-null', 'boolean', 'number']);
+site.vue('cell', ['hidden', 'template', 'field', 'currency', 'boolean', 'number']);
 ```
 
 **Note:** Currently They must be prefixed/categorized. The .vue single file components will be found in the named folders, as well as referenced like this:
@@ -291,12 +291,67 @@ this.trigger('error', err);
 site.trigger('error', err);
 ```
 
+## Dev Environment
+
+Both a backend node express server, and a frontend Webpack server are used while in development. This enables hot-loading Vue components which enables a lot faster development.
+
+### Package.json Scripts
+
+For convenience the package.json has two scripts for starting both servers. You can modify then with environment variables or node flags if needed. **Note:** you will need to use the same `jsPort` in both the `frontend` script and used when configuring the http server (in the main app.js file).
+
+**Running Backend Server** 
+
+```sh
+npm run backend
+```
+
+**Running Frontend Server**
+
+```sh
+npm run frontend
+```
+
+Now when you save an individual `.vue` component file it will quickly load in the browser.
+
+**Note:** When you add, remove or move files you will need to re-run the frontend server.
+
+## Packaging For Production
+
+Stateless uses Webpack to create a single javascript file (build.js) for everything. Every time you change any .vue file you need to rebuild. Feel free to modify webpack.config.js for your needs (included image sizes, loaders for different parsers, file types). The build file gets gzip compressed when served to the user.
+
+```sh
+npm run build
+```
+
 ## Logging
 
-### User Specific
+A simple logging system has been setup, prefixing the output with date/time and log type information.
 
+```javascript
+//inside a controller:
+this.log('message', 'error', data);
+
+//in the main app code:
+site.log('message', 'success', data);
+```
+
+###Types of logs
+
+The second parameter can be one of the following:
+
+* default: (=)
+* error: (-)
+* success: (+)
+* unknown: (?)
+* event: (*)
+* redirect: (~)
+* other: (#)
+
+When used the log message will be prefixed with the character in brackets.
 
 ## Todo
 
 * Support for state lists (chat messages)
 * Custom events
+* User specific states/data
+* Supressing logging
